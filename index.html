@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Campeonato com Supabase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      body { font-family: 'Inter', sans-serif; background-color: #111827; color: #e5e7eb; }
+      .card { background-color: #1f2937; border: 1px solid #374151; }
+      .btn-primary { background-color: #3b82f6; transition: background-color 0.3s; }
+      .btn-primary:hover { background-color: #2563eb; }
+      .btn-secondary { background-color: #4b5563; transition: background-color: 0.3s; }
+      .btn-secondary:hover { background-color: #374151; }
+      .btn-danger { background-color: #ef4444; transition: background-color: 0.3s; }
+      .btn-danger:hover { background-color: #dc2626; }
+      .input-field { background-color: #374151; border: 1px solid #4b5563; color: #e5e7eb; }
+      .input-field:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px #1d4ed8; }
+      .table-header { background-color: #374151; }
+      .modal-backdrop { background-color: rgba(0, 0, 0, 0.7); }
+      .nav-link { color: #9ca3af; border-bottom: 2px solid transparent; }
+      .nav-link.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+      .page { display: none; }
+      .page.active { display: block; }
+    </style>
+  </head>
+  <body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+      <header class="text-center mb-10">
+        <h1 class="text-4xl md:text-5xl font-bold text-white">
+          🏆 Sistema de Campeonato
+        </h1>
+        <p class="text-lg text-gray-400 mt-2">
+          Gerencie seus torneios com Supabase.
+        </p>
+      </header>
+
+      <!-- Navegação -->
+      <nav class="flex justify-center gap-6 mb-8 border-b border-gray-700">
+        <button id="nav-dashboard" class="nav-link py-4 px-2 font-medium">
+          Dashboard
+        </button>
+        <button id="nav-sorteio" class="nav-link py-4 px-2 font-medium">
+          Sorteio
+        </button>
+      </nav>
+
+      <!-- Container das Páginas -->
+      <main>
+        <!-- Página do Dashboard -->
+        <div id="page-dashboard" class="page active">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Coluna da Esquerda: Cadastro e Times -->
+            <div class="lg:col-span-1 flex flex-col gap-8">
+              <div class="card p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-white">
+                  Cadastrar Time
+                </h2>
+                <form id="form-cadastro-time" class="flex gap-2">
+                  <input
+                    type="text"
+                    id="nome-time"
+                    placeholder="Nome do time"
+                    class="input-field w-full rounded-md p-2"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    class="btn-primary text-white font-bold py-2 px-4 rounded-md"
+                  >
+                    Adicionar
+                  </button>
+                </form>
+              </div>
+              <div class="card p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-white">
+                  Times Cadastrados
+                </h2>
+                <ul
+                  id="lista-times"
+                  class="space-y-2 max-h-60 overflow-y-auto pr-2"
+                ></ul>
+              </div>
+              <div class="card p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-white">Gerar Grupos</h2>
+                <form id="form-gerar-grupos" class="space-y-4">
+                  <div>
+                    <label
+                      for="numero-grupos"
+                      class="block mb-2 text-sm font-medium text-gray-300"
+                      >Quantidade de Grupos</label
+                    >
+                    <input
+                      type="number"
+                      id="numero-grupos"
+                      value="2"
+                      min="1"
+                      class="input-field w-full rounded-md p-2"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    class="w-full btn-secondary text-white font-bold py-2 px-4 rounded-md"
+                  >
+                    Sortear Grupos
+                  </button>
+                </form>
+              </div>
+            </div>
+            <!-- Coluna do Meio: Grupos e Partidas -->
+            <div class="lg:col-span-1 flex flex-col gap-8">
+              <div class="card p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-white">Grupos</h2>
+                <div
+                  id="container-grupos"
+                  class="space-y-4 max-h-60 overflow-y-auto pr-2"
+                ></div>
+              </div>
+              <div class="card p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-white">
+                  Registrar Partida
+                </h2>
+                <form id="form-registrar-partida" class="space-y-4">
+                  <div class="flex items-center justify-between gap-4">
+                    <select
+                      id="timeA"
+                      class="input-field w-full rounded-md p-2"
+                    ></select>
+                    <input
+                      type="number"
+                      id="golsA"
+                      min="0"
+                      value="0"
+                      class="input-field w-20 text-center rounded-md p-2"
+                    />
+                  </div>
+                  <div class="text-center font-bold text-gray-400">VS</div>
+                  <div class="flex items-center justify-between gap-4">
+                    <select
+                      id="timeB"
+                      class="input-field w-full rounded-md p-2"
+                    ></select>
+                    <input
+                      type="number"
+                      id="golsB"
+                      min="0"
+                      value="0"
+                      class="input-field w-20 text-center rounded-md p-2"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    class="w-full btn-primary text-white font-bold py-2 px-4 rounded-md"
+                  >
+                    Salvar Resultado
+                  </button>
+                </form>
+              </div>
+              <div class="card p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-white">
+                  Histórico de Partidas
+                </h2>
+                <ul
+                  id="lista-historico"
+                  class="space-y-3 max-h-80 overflow-y-auto pr-2"
+                ></ul>
+              </div>
+            </div>
+            <!-- Coluna da Direita: Tabela de Classificação -->
+            <div class="lg:col-span-1">
+              <div class="card p-6 rounded-lg shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-2xl font-bold text-white">
+                    Tabela de Classificação
+                  </h2>
+                  <button
+                    id="btn-resetar-pontos"
+                    class="btn-danger text-white font-bold py-1 px-3 rounded-md text-sm"
+                    title="Zerar todos os pontos"
+                  >
+                    <i class="fas fa-sync-alt mr-1"></i> Zerar Pontos
+                  </button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm text-left text-gray-300">
+                    <thead class="text-xs text-gray-200 uppercase table-header">
+                      <tr>
+                        <th class="px-4 py-3">#</th>
+                        <th class="px-4 py-3">Time</th>
+                        <th class="px-2 py-3 text-center" title="Pontos">P</th>
+                        <th class="px-2 py-3 text-center" title="Jogos">J</th>
+                        <th class="px-2 py-3 text-center" title="Vitórias">
+                          V
+                        </th>
+                        <th class="px-2 py-3 text-center" title="Empates">E</th>
+                        <th class="px-2 py-3 text-center" title="Derrotas">
+                          D
+                        </th>
+                        <th class="px-2 py-3 text-center" title="Saldo de Gols">
+                          SG
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody id="tabela-classificacao"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Página de Sorteio -->
+        <div id="page-sorteio" class="page">
+          <div class="flex flex-col items-center gap-8">
+            <div
+              class="card p-8 rounded-lg shadow-lg w-full max-w-2xl text-center"
+            >
+              <h2 class="text-3xl font-bold mb-6 text-white">
+                Sorteio da Próxima Partida
+              </h2>
+              <button
+                id="btn-sortear-partida"
+                class="btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg"
+              >
+                <i class="fas fa-random mr-2"></i> Sortear Confronto
+              </button>
+            </div>
+            <div
+              id="resultado-sorteio-card"
+              class="card p-8 rounded-lg shadow-lg w-full max-w-2xl text-center hidden"
+            >
+              <h3 class="text-2xl font-bold mb-4 text-gray-400">
+                Próxima Partida
+              </h3>
+              <div
+                id="resultado-sorteio-times"
+                class="text-4xl font-extrabold text-white flex justify-center items-center gap-6"
+              >
+                <!-- Ex: <span>Time A</span> <span class="text-2xl text-gray-500">VS</span> <span>Time B</span> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal para mensagens de informação -->
+    <div
+      id="modal-info"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
+    >
+      <div class="card p-6 rounded-lg shadow-2xl w-11/12 max-w-sm text-center">
+        <p id="modal-info-mensagem" class="text-lg mb-4"></p>
+        <button
+          id="modal-info-fechar"
+          class="btn-primary text-white font-bold py-2 px-6 rounded-md"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal para confirmação -->
+    <div
+      id="modal-confirm"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
+    >
+      <div class="card p-6 rounded-lg shadow-2xl w-11/12 max-w-sm text-center">
+        <p id="modal-confirm-mensagem" class="text-lg mb-6"></p>
+        <div class="flex justify-center gap-4">
+          <button
+            id="modal-confirm-cancelar"
+            class="btn-secondary text-white font-bold py-2 px-6 rounded-md"
+          >
+            Cancelar
+          </button>
+          <button
+            id="modal-confirm-action"
+            class="btn-danger text-white font-bold py-2 px-6 rounded-md"
+          >
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Módulo do Supabase -->
+    <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+      // --- Configuração do Supabase ---
+      const SUPABASE_URL = "https://ddqcdmeagmbchbbrques.supabase.co";
+      const SUPABASE_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkcWNkbWVhZ21iY2hiYnJxdWVzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjU5NDExMCwiZXhwIjoyMDY4MTcwMTEwfQ.30ntE6RUWAqxYy3kd4H2bAB2K4IMHrpf92UEVpk2t3w";
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      // --- Gerenciamento de Páginas ---
+      const navDashboard = document.getElementById("nav-dashboard");
+      const navSorteio = document.getElementById("nav-sorteio");
+      const pageDashboard = document.getElementById("page-dashboard");
+      const pageSorteio = document.getElementById("page-sorteio");
+
+      function navigateTo(page) {
+        [pageDashboard, pageSorteio].forEach((p) =>
+          p.classList.remove("active")
+        );
+        [navDashboard, navSorteio].forEach((n) => n.classList.remove("active"));
+
+        if (page === "dashboard") {
+          pageDashboard.classList.add("active");
+          navDashboard.classList.add("active");
+        } else if (page === "sorteio") {
+          pageSorteio.classList.add("active");
+          navSorteio.classList.add("active");
+        }
+      }
+      navDashboard.addEventListener("click", () => navigateTo("dashboard"));
+      navSorteio.addEventListener("click", () => navigateTo("sorteio"));
+
+      // --- Funções dos Modais ---
+      const modalInfo = document.getElementById("modal-info");
+      const modalInfoMensagem = document.getElementById("modal-info-mensagem");
+      const modalInfoFechar = document.getElementById("modal-info-fechar");
+      function mostrarModalInfo(mensagem) {
+        modalInfoMensagem.textContent = mensagem;
+        modalInfo.classList.remove("hidden");
+      }
+      modalInfoFechar.addEventListener("click", () =>
+        modalInfo.classList.add("hidden")
+      );
+
+      const modalConfirm = document.getElementById("modal-confirm");
+      const modalConfirmMensagem = document.getElementById(
+        "modal-confirm-mensagem"
+      );
+      const modalConfirmCancelar = document.getElementById(
+        "modal-confirm-cancelar"
+      );
+      const modalConfirmAction = document.getElementById(
+        "modal-confirm-action"
+      );
+
+      modalConfirmCancelar.addEventListener("click", () =>
+        modalConfirm.classList.add("hidden")
+      );
+
+      // --- Funções de Renderização ---
+      function renderizarTimes(times) {
+        const listaTimesUl = document.getElementById("lista-times");
+        const tabelaClassificacaoTbody = document.getElementById(
+          "tabela-classificacao"
+        );
+        const timeASelect = document.getElementById("timeA");
+        const timeBSelect = document.getElementById("timeB");
+
+        if (!times || times.length === 0) {
+          listaTimesUl.innerHTML =
+            '<li class="text-gray-400">Nenhum time cadastrado.</li>';
+          tabelaClassificacaoTbody.innerHTML =
+            '<tr><td colspan="8" class="text-center py-4 text-gray-400">Cadastre um time para começar.</td></tr>';
+          timeASelect.innerHTML = "<option>Nenhum time</option>";
+          timeBSelect.innerHTML = "<option>Nenhum time</option>";
+          return;
+        }
+
+        times.sort(
+          (a, b) =>
+            b.pontos - a.pontos ||
+            b.vitorias - a.vitorias ||
+            b.saldoGols - a.saldoGols
+        );
+
+        listaTimesUl.innerHTML = times
+          .map(
+            (time) => `
+                <li class="flex justify-between items-center text-gray-200 p-2 rounded-md hover:bg-gray-700">
+                    <span>${time.nome}</span>
+                    <button class="delete-time-btn text-red-500 hover:text-red-400" data-id="${time.id}" data-nome="${time.nome}" title="Deletar time">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </li>
+            `
+          )
+          .join("");
+
+        tabelaClassificacaoTbody.innerHTML = times
+          .map(
+            (time, index) => `
+                <tr class="border-b border-gray-700 hover:bg-gray-800">
+                    <td class="px-4 py-3 font-medium">${index + 1}</td>
+                    <td class="px-4 py-3 font-bold">${time.nome}</td>
+                    <td class="px-2 py-3 text-center">${time.pontos}</td>
+                    <td class="px-2 py-3 text-center">${time.jogos}</td>
+                    <td class="px-2 py-3 text-center">${time.vitorias}</td>
+                    <td class="px-2 py-3 text-center">${time.empates}</td>
+                    <td class="px-2 py-3 text-center">${time.derrotas}</td>
+                    <td class="px-2 py-3 text-center">${time.saldoGols}</td>
+                </tr>
+            `
+          )
+          .join("");
+
+        const options = times
+          .map((time) => `<option value="${time.id}">${time.nome}</option>`)
+          .join("");
+        timeASelect.innerHTML = options;
+        timeBSelect.innerHTML = options;
+      }
+
+      async function renderizarGrupos(grupos) {
+        const containerGrupos = document.getElementById("container-grupos");
+        if (!containerGrupos) return;
+        if (!grupos || grupos.length === 0) {
+          containerGrupos.innerHTML =
+            '<p class="text-gray-400">Os grupos aparecerão aqui após o sorteio.</p>';
+          return;
+        }
+
+        const allTeamIds = [
+          ...new Set(grupos.flatMap((g) => g.times_ids || [])),
+        ];
+        if (allTeamIds.length === 0) {
+          containerGrupos.innerHTML = grupos
+            .map(
+              (grupo) => `
+                    <div class="p-4 rounded-md border border-gray-700">
+                        <h3 class="font-bold text-lg text-blue-400">${grupo.nome}</h3>
+                        <p class="text-gray-400">Grupo vazio.</p>
+                    </div>
+                `
+            )
+            .join("");
+          return;
+        }
+
+        const { data: timesData, error: timesError } = await supabase
+          .from("times")
+          .select("id, nome")
+          .in("id", allTeamIds);
+        if (timesError) {
+          console.error(
+            "Erro ao buscar nomes dos times para grupos:",
+            timesError
+          );
+          return;
+        }
+
+        const timesMap = new Map(timesData.map((t) => [t.id, t.nome]));
+        containerGrupos.innerHTML = grupos
+          .map(
+            (grupo) => `
+                <div class="p-4 rounded-md border border-gray-700">
+                    <h3 class="font-bold text-lg text-blue-400">${
+                      grupo.nome
+                    }</h3>
+                    <ul class="list-disc list-inside mt-2 text-gray-300">
+                        ${(grupo.times_ids || [])
+                          .map(
+                            (id) =>
+                              `<li>${
+                                timesMap.get(id) || "Time não encontrado"
+                              }</li>`
+                          )
+                          .join("")}
+                    </ul>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      function renderizarHistorico(partidas) {
+        const listaHistoricoUl = document.getElementById("lista-historico");
+        if (!partidas || partidas.length === 0) {
+          listaHistoricoUl.innerHTML =
+            '<li class="text-gray-400">Nenhuma partida registrada.</li>';
+          return;
+        }
+
+        listaHistoricoUl.innerHTML = partidas
+          .map((partida) => {
+            const vencedorClass =
+              partida.vencedor_nome === "Empate"
+                ? "text-yellow-400"
+                : "text-green-400";
+            return `
+                    <li class="p-3 rounded-md border border-gray-700 group">
+                        <div class="flex justify-between items-center text-gray-200">
+                            <span>${partida.time_a_nome}</span>
+                            <span class="font-bold">${partida.gols_a} x ${partida.gols_b}</span>
+                            <span>${partida.time_b_nome}</span>
+                             <button class="delete-partida-btn text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" data-id="${partida.id}" title="Deletar partida">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        <div class="text-center text-sm mt-1 ${vencedorClass}">
+                            <i class="fas fa-trophy mr-1"></i> Vencedor: ${partida.vencedor_nome}
+                        </div>
+                    </li>
+                `;
+          })
+          .join("");
+      }
+
+      function handleMissingTableError(error, tableName) {
+        console.error(`Erro ao acessar a tabela '${tableName}':`, error);
+        if (error.code === "42P01") {
+          mostrarModalInfo(
+            `CONFIGURAÇÃO NECESSÁRIA: A tabela '${tableName}' não foi encontrada. Por favor, execute o script SQL de configuração no seu painel Supabase.`
+          );
+        } else {
+          mostrarModalInfo(
+            `Ocorreu um erro inesperado ao acessar a tabela '${tableName}'.`
+          );
+        }
+      }
+
+      async function carregarDadosIniciais() {
+        const { data: times, error: timesError } = await supabase
+          .from("times")
+          .select("*");
+        if (timesError) {
+          handleMissingTableError(timesError, "times");
+          return;
+        }
+        renderizarTimes(times);
+
+        const { data: grupos, error: gruposError } = await supabase
+          .from("grupos")
+          .select("*")
+          .order("nome");
+        if (gruposError) {
+          handleMissingTableError(gruposError, "grupos");
+        } else {
+          await renderizarGrupos(grupos);
+        }
+
+        const { data: partidas, error: partidasError } = await supabase
+          .from("partidas")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(10);
+        if (partidasError) {
+          handleMissingTableError(partidasError, "partidas");
+          return;
+        }
+        renderizarHistorico(partidas);
+      }
+
+      // --- Lógica dos Formulários e Botões ---
+      document
+        .getElementById("form-cadastro-time")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const nomeTimeInput = document.getElementById("nome-time");
+          const nome = nomeTimeInput.value.trim();
+
+          if (nome) {
+            const { error } = await supabase
+              .from("times")
+              .insert([{ nome: nome }]);
+            if (error) {
+              handleMissingTableError(error, "times");
+            } else {
+              nomeTimeInput.value = "";
+              mostrarModalInfo(`Time "${nome}" cadastrado com sucesso!`);
+            }
+          }
+        });
+
+      document
+        .getElementById("form-gerar-grupos")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const numeroDeGrupos = parseInt(
+            document.getElementById("numero-grupos").value,
+            10
+          );
+
+          if (isNaN(numeroDeGrupos) || numeroDeGrupos <= 0) {
+            mostrarModalInfo("Por favor, insira um número válido de grupos.");
+            return;
+          }
+
+          const { data: times, error: fetchError } = await supabase
+            .from("times")
+            .select("id");
+          if (fetchError) {
+            handleMissingTableError(fetchError, "times");
+            return;
+          }
+
+          if (times.length < numeroDeGrupos) {
+            mostrarModalInfo(
+              "Não há times suficientes para formar essa quantidade de grupos."
+            );
+            return;
+          }
+
+          let timeIds = times.map((t) => t.id);
+          timeIds.sort(() => 0.5 - Math.random());
+
+          const { error: deleteError } = await supabase
+            .from("grupos")
+            .delete()
+            .neq("id", "00000000-0000-0000-0000-000000000000");
+          if (deleteError) {
+            handleMissingTableError(deleteError, "grupos");
+            return;
+          }
+
+          const gruposParaInserir = Array.from(
+            { length: numeroDeGrupos },
+            (_, i) => ({
+              nome: `Grupo ${String.fromCharCode(65 + i)}`,
+              times_ids: [],
+            })
+          );
+
+          timeIds.forEach((id, index) => {
+            gruposParaInserir[index % numeroDeGrupos].times_ids.push(id);
+          });
+
+          const { error: insertError } = await supabase
+            .from("grupos")
+            .insert(gruposParaInserir);
+          if (insertError) {
+            handleMissingTableError(insertError, "grupos");
+          } else {
+            mostrarModalInfo("Grupos gerados com sucesso!");
+          }
+        });
+
+      document
+        .getElementById("form-registrar-partida")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const idTimeA = document.getElementById("timeA").value;
+          const idTimeB = document.getElementById("timeB").value;
+          const golsA = parseInt(document.getElementById("golsA").value, 10);
+          const golsB = parseInt(document.getElementById("golsB").value, 10);
+
+          if (idTimeA === idTimeB) {
+            mostrarModalInfo("Um time não pode jogar contra si mesmo.");
+            return;
+          }
+          if (isNaN(golsA) || isNaN(golsB) || golsA < 0 || golsB < 0) {
+            mostrarModalInfo("Por favor, insira um placar válido.");
+            return;
+          }
+
+          const { data: times, error: fetchError } = await supabase
+            .from("times")
+            .select("*")
+            .in("id", [idTimeA, idTimeB]);
+          if (fetchError) {
+            handleMissingTableError(fetchError, "times");
+            return;
+          }
+
+          if (times.length !== 2) {
+            mostrarModalInfo("Erro ao buscar os times para a partida.");
+            return;
+          }
+
+          const statsA = times.find((t) => t.id === idTimeA);
+          const statsB = times.find((t) => t.id === idTimeB);
+
+          statsA.jogos += 1;
+          statsB.jogos += 1;
+          statsA.golsPro += golsA;
+          statsA.golsContra += golsB;
+          statsB.golsPro += golsB;
+          statsB.golsContra += golsA;
+          statsA.saldoGols = statsA.golsPro - statsA.golsContra;
+          statsB.saldoGols = statsB.golsPro - statsB.golsContra;
+
+          let vencedorNome;
+          if (golsA > golsB) {
+            statsA.vitorias += 1;
+            statsA.pontos += 2;
+            statsB.derrotas += 1;
+            statsB.pontos += 1;
+            vencedorNome = statsA.nome;
+          } else if (golsB > golsA) {
+            statsB.vitorias += 1;
+            statsB.pontos += 2;
+            statsA.derrotas += 1;
+            statsA.pontos += 1;
+            vencedorNome = statsB.nome;
+          } else {
+            statsA.empates += 1;
+            statsB.empates += 1;
+            statsA.pontos += 1;
+            statsB.pontos += 1;
+            vencedorNome = "Empate";
+          }
+
+          const { error: updateErrorA } = await supabase
+            .from("times")
+            .update(statsA)
+            .eq("id", idTimeA);
+          const { error: updateErrorB } = await supabase
+            .from("times")
+            .update(statsB)
+            .eq("id", idTimeB);
+
+          if (updateErrorA || updateErrorB) {
+            mostrarModalInfo("Ocorreu um erro ao atualizar os pontos.");
+            return;
+          }
+
+          const { error: insertPartidaError } = await supabase
+            .from("partidas")
+            .insert({
+              time_a_nome: statsA.nome,
+              time_b_nome: statsB.nome,
+              gols_a: golsA,
+              gols_b: golsB,
+              vencedor_nome: vencedorNome,
+            });
+
+          if (insertPartidaError) {
+            handleMissingTableError(insertPartidaError, "partidas");
+          } else {
+            mostrarModalInfo("Resultado da partida registrado com sucesso!");
+            document.getElementById("form-registrar-partida").reset();
+          }
+        });
+
+      // --- Lógica para Deletar ---
+      document
+        .getElementById("lista-times")
+        .addEventListener("click", async (e) => {
+          const deleteButton = e.target.closest(".delete-time-btn");
+          if (deleteButton) {
+            const timeId = deleteButton.dataset.id;
+            const timeNome = deleteButton.dataset.nome;
+
+            modalConfirmMensagem.textContent = `Você tem certeza que deseja deletar o time "${timeNome}"?`;
+            modalConfirmAction.textContent = "Sim, deletar";
+            modalConfirm.classList.remove("hidden");
+
+            modalConfirmAction.onclick = async () => {
+              await deletarTime(timeId, timeNome);
+              modalConfirm.classList.add("hidden");
+            };
+          }
+        });
+
+      document
+        .getElementById("lista-historico")
+        .addEventListener("click", async (e) => {
+          const deleteButton = e.target.closest(".delete-partida-btn");
+          if (deleteButton) {
+            const partidaId = deleteButton.dataset.id;
+
+            modalConfirmMensagem.textContent =
+              "Você tem certeza que deseja deletar este registro da partida?";
+            modalConfirmAction.textContent = "Sim, deletar";
+            modalConfirm.classList.remove("hidden");
+
+            modalConfirmAction.onclick = async () => {
+              await deletarPartida(partidaId);
+              modalConfirm.classList.add("hidden");
+            };
+          }
+        });
+
+      async function deletarTime(timeId, timeNome) {
+        const { data: grupos, error: fetchGruposError } = await supabase
+          .from("grupos")
+          .select("id, times_ids")
+          .contains("times_ids", [timeId]);
+
+        if (fetchGruposError) {
+          if (fetchGruposError.code !== "42P01") {
+            handleMissingTableError(fetchGruposError, "grupos");
+            return;
+          }
+        }
+
+        if (grupos) {
+          for (const grupo of grupos) {
+            const novosTimesIds = grupo.times_ids.filter((id) => id !== timeId);
+            const { error: updateGrupoError } = await supabase
+              .from("grupos")
+              .update({ times_ids: novosTimesIds })
+              .eq("id", grupo.id);
+
+            if (updateGrupoError) {
+              mostrarModalInfo(
+                `Erro ao remover o time do grupo ${grupo.nome}.`
+              );
+              return;
+            }
+          }
+        }
+
+        const { error: deleteTimeError } = await supabase
+          .from("times")
+          .delete()
+          .eq("id", timeId);
+
+        if (deleteTimeError) {
+          handleMissingTableError(deleteTimeError, "times");
+        } else {
+          mostrarModalInfo(`Time "${timeNome}" deletado com sucesso.`);
+        }
+      }
+
+      async function deletarPartida(partidaId) {
+        const { error } = await supabase
+          .from("partidas")
+          .delete()
+          .eq("id", partidaId);
+        if (error) {
+          handleMissingTableError(error, "partidas");
+        } else {
+          mostrarModalInfo("Registro da partida deletado com sucesso.");
+        }
+      }
+
+      document
+        .getElementById("btn-resetar-pontos")
+        .addEventListener("click", () => {
+          modalConfirmMensagem.textContent =
+            "Você tem certeza que deseja zerar os pontos e estatísticas de TODOS os times?";
+          modalConfirmAction.textContent = "Sim, zerar";
+          modalConfirm.classList.remove("hidden");
+
+          modalConfirmAction.onclick = async () => {
+            await resetarPontos();
+            modalConfirm.classList.add("hidden");
+          };
+        });
+
+      async function resetarPontos() {
+        const { error } = await supabase
+          .from("times")
+          .update({
+            pontos: 0,
+            jogos: 0,
+            vitorias: 0,
+            empates: 0,
+            derrotas: 0,
+            golsPro: 0,
+            golsContra: 0,
+            saldoGols: 0,
+          })
+          .neq("id", "00000000-0000-0000-0000-000000000000");
+
+        if (error) {
+          handleMissingTableError(error, "times");
+        } else {
+          mostrarModalInfo(
+            "Todos os pontos e estatísticas foram zerados com sucesso!"
+          );
+        }
+      }
+
+      // --- Lógica do Sorteio ---
+      document
+        .getElementById("btn-sortear-partida")
+        .addEventListener("click", async () => {
+          const { data: times, error: timesError } = await supabase
+            .from("times")
+            .select("nome");
+          const { data: partidas, error: partidasError } = await supabase
+            .from("partidas")
+            .select("time_a_nome, time_b_nome");
+
+          if (timesError || partidasError) {
+            mostrarModalInfo("Erro ao carregar dados para o sorteio.");
+            return;
+          }
+
+          if (!times || times.length < 2) {
+            mostrarModalInfo(
+              "É necessário ter pelo menos 2 times cadastrados para o sorteio."
+            );
+            return;
+          }
+
+          const playedPairs = new Set();
+          partidas.forEach((p) => {
+            const pair = [p.time_a_nome, p.time_b_nome].sort().join("|");
+            playedPairs.add(pair);
+          });
+
+          const teamNames = times.map((t) => t.nome);
+          const allPossiblePairs = [];
+          for (let i = 0; i < teamNames.length; i++) {
+            for (let j = i + 1; j < teamNames.length; j++) {
+              allPossiblePairs.push([teamNames[i], teamNames[j]]);
+            }
+          }
+
+          const availablePairs = allPossiblePairs.filter((pair) => {
+            const sortedPairKey = [...pair].sort().join("|");
+            return !playedPairs.has(sortedPairKey);
+          });
+
+          const resultadoCard = document.getElementById(
+            "resultado-sorteio-card"
+          );
+          const resultadoTimes = document.getElementById(
+            "resultado-sorteio-times"
+          );
+
+          if (availablePairs.length === 0) {
+            resultadoTimes.innerHTML =
+              '<span class="text-2xl text-yellow-400">Todos os times já se enfrentaram!</span>';
+          } else {
+            const randomIndex = Math.floor(
+              Math.random() * availablePairs.length
+            );
+            const [time1, time2] = availablePairs[randomIndex];
+            resultadoTimes.innerHTML = `
+                    <span>${time1}</span>
+                    <span class="text-2xl text-gray-500">VS</span>
+                    <span>${time2}</span>
+                `;
+          }
+          resultadoCard.classList.remove("hidden");
+        });
+
+      // --- Realtime Subscriptions ---
+      supabase
+        .channel("public-data")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public" },
+          carregarDadosIniciais
+        )
+        .subscribe();
+
+      // --- Iniciar a aplicação ---
+      navigateTo("dashboard"); // Inicia na página do dashboard
+      carregarDadosIniciais();
+    </script>
+  </body>
+</html>
