@@ -1,303 +1,515 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Campeonato App</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Campeonato App (Offline)</title>
+
+    <!-- Link para o Manifesto PWA -->
+    <link rel="manifest" href="manifest.json" />
+    <!-- Cor da barra de status em browsers mobile -->
+    <meta name="theme-color" content="#1f2937" />
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #111827; color: #e5e7eb; -webkit-tap-highlight-color: transparent; }
-        .card { background-color: #1f2937; border: 1px solid #374151; }
-        .btn-primary { background-color: #3b82f6; transition: background-color 0.3s; }
-        .btn-primary:hover { background-color: #2563eb; }
-        .btn-danger { background-color: #ef4444; transition: background-color: 0.3s; }
-        .btn-danger:hover { background-color: #dc2626; }
-        .input-field { background-color: #374151; border: 1px solid #4b5563; color: #e5e7eb; }
-        .input-field:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px #1d4ed8; }
-        .page { display: none; }
-        .page.active { display: block; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: #1f2937; border-top: 1px solid #374151; }
-        .nav-link { color: #9ca3af; }
-        .nav-link.active { color: #3b82f6; }
-        main { padding-bottom: 80px; } /* Space for bottom nav */
+      body { font-family: 'Inter', sans-serif; background-color: #111827; color: #e5e7eb; -webkit-tap-highlight-color: transparent; }
+      .card { background-color: #1f2937; border: 1px solid #374151; }
+      .btn-primary { background-color: #3b82f6; transition: background-color 0.3s; }
+      .btn-primary:hover { background-color: #2563eb; }
+      .btn-danger { background-color: #ef4444; transition: background-color: 0.3s; }
+      .btn-danger:hover { background-color: #dc2626; }
+      .input-field { background-color: #374151; border: 1px solid #4b5563; color: #e5e7eb; }
+      .input-field:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px #1d4ed8; }
+      .page { display: none; }
+      .page.active { display: block; }
+      .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: #1f2937; border-top: 1px solid #374151; }
+      .nav-link { color: #9ca3af; }
+      .nav-link.active { color: #3b82f6; }
+      main { padding-bottom: 80px; } /* Space for bottom nav */
     </style>
-</head>
-<body class="p-4">
-
+  </head>
+  <body class="p-4">
     <main id="app-container" class="max-w-xl mx-auto">
-        <!-- Página de Partidas (Rodadas) -->
-        <div id="page-partidas" class="page">
-            <h1 class="text-3xl font-bold text-white mb-6">Partidas</h1>
-            <div class="card p-6 rounded-lg shadow-lg mb-6">
-                <h2 class="text-xl font-bold mb-4">Gerar Rodadas</h2>
-                <p class="text-gray-400 mb-4 text-sm">Crie todas as rodadas do campeonato. Isso garantirá que todos os times se enfrentem uma vez.</p>
-                <button id="btn-gerar-rodadas" class="w-full btn-primary text-white font-bold py-3 px-4 rounded-lg">Gerar Confrontos</button>
-            </div>
-            <div id="container-rodadas" class="space-y-4">
-                <!-- Rodadas serão inseridas aqui -->
-            </div>
+      <!-- Página de Partidas (Rodadas) -->
+      <div id="page-partidas" class="page">
+        <h1 class="text-3xl font-bold text-white mb-6">Partidas</h1>
+        <div class="card p-6 rounded-lg shadow-lg mb-6">
+          <h2 class="text-xl font-bold mb-4">Gerar Rodadas</h2>
+          <p class="text-gray-400 mb-4 text-sm">
+            Crie todas as rodadas do campeonato. Isso garantirá que todos os
+            times se enfrentem uma vez.
+          </p>
+          <button
+            id="btn-gerar-rodadas"
+            class="w-full btn-primary text-white font-bold py-3 px-4 rounded-lg"
+          >
+            Gerar Confrontos
+          </button>
         </div>
+        <div id="container-rodadas" class="space-y-4">
+          <!-- Rodadas serão inseridas aqui -->
+        </div>
+      </div>
 
-        <!-- Página da Tabela de Classificação -->
-        <div id="page-classificacao" class="page">
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-3xl font-bold text-white">Classificação</h1>
-                <button id="btn-resetar-pontos" class="btn-danger text-white font-bold py-1 px-3 rounded-md text-sm" title="Zerar todos os pontos">
-                    <i class="fas fa-sync-alt"></i>
+      <!-- Página da Tabela de Classificação -->
+      <div id="page-classificacao" class="page">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-3xl font-bold text-white">Classificação</h1>
+          <button
+            id="btn-resetar-pontos"
+            class="btn-danger text-white font-bold py-1 px-3 rounded-md text-sm"
+            title="Zerar todos os pontos"
+          >
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+        <div class="overflow-x-auto card rounded-lg p-2">
+          <table class="w-full text-sm text-left text-gray-300">
+            <thead class="text-xs text-gray-200 uppercase">
+              <tr>
+                <th class="px-2 py-3">#</th>
+                <th class="px-4 py-3">Time</th>
+                <th class="px-1 py-3 text-center" title="Pontos">P</th>
+                <th class="px-1 py-3 text-center" title="Jogos">J</th>
+                <th class="px-1 py-3 text-center" title="Vitórias">V</th>
+                <th class="px-1 py-3 text-center" title="Empates">E</th>
+                <th class="px-1 py-3 text-center" title="Derrotas">D</th>
+                <th class="px-1 py-3 text-center" title="Saldo de Gols">SG</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-classificacao"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Página de Times -->
+      <div id="page-times" class="page">
+        <h1 class="text-3xl font-bold text-white mb-6">Times</h1>
+        <div class="card p-6 rounded-lg shadow-lg mb-6">
+          <h2 class="text-xl font-bold mb-4">Cadastrar Novo Time</h2>
+          <form id="form-cadastro-time" class="flex gap-2">
+            <input
+              type="text"
+              id="nome-time"
+              placeholder="Nome do time"
+              class="input-field w-full rounded-md p-2"
+              required
+            />
+            <button
+              type="submit"
+              class="btn-primary text-white font-bold py-2 px-4 rounded-md"
+            >
+              Salvar
+            </button>
+          </form>
+        </div>
+        <div class="card p-6 rounded-lg shadow-lg">
+          <h2 class="text-xl font-bold mb-4">Times Cadastrados</h2>
+          <ul id="lista-times" class="space-y-2"></ul>
+        </div>
+      </div>
+
+      <!-- Página de Registro de Partida -->
+      <div id="page-registrar-partida" class="page">
+        <h1 class="text-3xl font-bold text-white mb-6">Registrar Partida</h1>
+        <div class="card p-6 rounded-lg shadow-lg">
+          <form id="form-registrar-partida" class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <select
+                id="timeA"
+                class="input-field w-full rounded-md p-2"
+              ></select>
+              <input
+                type="number"
+                id="golsA"
+                min="0"
+                value="0"
+                class="input-field w-16 text-center rounded-md p-2"
+              />
+              <button
+                type="button"
+                id="btn-vencedor-a"
+                class="btn-primary p-3 rounded-md"
+                title="Marcar como vencedor"
+              >
+                <i class="fas fa-trophy"></i>
+              </button>
+            </div>
+            <div class="text-center font-bold text-gray-400">VS</div>
+            <div class="flex items-center justify-between gap-2">
+              <select
+                id="timeB"
+                class="input-field w-full rounded-md p-2"
+              ></select>
+              <input
+                type="number"
+                id="golsB"
+                min="0"
+                value="0"
+                class="input-field w-16 text-center rounded-md p-2"
+              />
+              <button
+                type="button"
+                id="btn-vencedor-b"
+                class="btn-primary p-3 rounded-md"
+                title="Marcar como vencedor"
+              >
+                <i class="fas fa-trophy"></i>
+              </button>
+            </div>
+            <button
+              type="submit"
+              class="w-full btn-primary text-white font-bold py-3 px-4 rounded-lg mt-4"
+            >
+              Salvar Resultado
+            </button>
+          </form>
+        </div>
+        <div class="card p-6 rounded-lg shadow-lg mt-6">
+          <h2 class="text-xl font-bold mb-4">Histórico Recente</h2>
+          <ul
+            id="lista-historico"
+            class="space-y-3 max-h-80 overflow-y-auto pr-2"
+          >
+            <!-- Histórico será inserido aqui -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Página do Placar -->
+      <div id="page-placar" class="page">
+        <h1 class="text-3xl font-bold text-white mb-6">Placar</h1>
+        <div class="card p-6 rounded-lg shadow-lg">
+          <div class="flex justify-around items-center text-center">
+            <!-- Time da Casa -->
+            <div class="flex-1">
+              <input
+                id="placar-time-a-nome"
+                type="text"
+                class="input-field w-full text-center text-lg font-bold mb-2"
+                placeholder="Time A"
+              />
+              <p id="placar-time-a-pontos" class="text-6xl font-bold">0</p>
+              <div class="mt-4 flex justify-center gap-2">
+                <button
+                  id="placar-time-a-menos"
+                  class="btn-danger w-12 h-12 rounded-full text-2xl"
+                >
+                  -
                 </button>
+                <button
+                  id="placar-time-a-mais"
+                  class="btn-primary w-12 h-12 rounded-full text-2xl"
+                >
+                  +
+                </button>
+              </div>
             </div>
-            <div class="overflow-x-auto card rounded-lg p-2">
-                <table class="w-full text-sm text-left text-gray-300">
-                    <thead class="text-xs text-gray-200 uppercase">
-                        <tr>
-                            <th class="px-2 py-3">#</th><th class="px-4 py-3">Time</th><th class="px-1 py-3 text-center" title="Pontos">P</th><th class="px-1 py-3 text-center" title="Jogos">J</th><th class="px-1 py-3 text-center" title="Vitórias">V</th><th class="px-1 py-3 text-center" title="Empates">E</th><th class="px-1 py-3 text-center" title="Derrotas">D</th><th class="px-1 py-3 text-center" title="Saldo de Gols">SG</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-classificacao"></tbody>
-                </table>
+            <div class="text-4xl font-bold text-gray-500 mx-4">VS</div>
+            <!-- Time Visitante -->
+            <div class="flex-1">
+              <input
+                id="placar-time-b-nome"
+                type="text"
+                class="input-field w-full text-center text-lg font-bold mb-2"
+                placeholder="Time B"
+              />
+              <p id="placar-time-b-pontos" class="text-6xl font-bold">0</p>
+              <div class="mt-4 flex justify-center gap-2">
+                <button
+                  id="placar-time-b-menos"
+                  class="btn-danger w-12 h-12 rounded-full text-2xl"
+                >
+                  -
+                </button>
+                <button
+                  id="placar-time-b-mais"
+                  class="btn-primary w-12 h-12 rounded-full text-2xl"
+                >
+                  +
+                </button>
+              </div>
             </div>
+          </div>
+          <button
+            id="placar-reset"
+            class="w-full btn-secondary text-white font-bold py-2 px-4 rounded-lg mt-8"
+          >
+            Zerar Placar
+          </button>
         </div>
-
-        <!-- Página de Times -->
-        <div id="page-times" class="page">
-            <h1 class="text-3xl font-bold text-white mb-6">Times</h1>
-            <div class="card p-6 rounded-lg shadow-lg mb-6">
-                <h2 class="text-xl font-bold mb-4">Cadastrar Novo Time</h2>
-                <form id="form-cadastro-time" class="flex gap-2">
-                    <input type="text" id="nome-time" placeholder="Nome do time" class="input-field w-full rounded-md p-2" required>
-                    <button type="submit" class="btn-primary text-white font-bold py-2 px-4 rounded-md">Salvar</button>
-                </form>
-            </div>
-            <div class="card p-6 rounded-lg shadow-lg">
-                <h2 class="text-xl font-bold mb-4">Times Cadastrados</h2>
-                <ul id="lista-times" class="space-y-2"></ul>
-            </div>
-        </div>
-
-        <!-- Página de Registro de Partida -->
-        <div id="page-registrar-partida" class="page">
-             <h1 class="text-3xl font-bold text-white mb-6">Registrar Partida</h1>
-             <div class="card p-6 rounded-lg shadow-lg">
-                <form id="form-registrar-partida" class="space-y-4">
-                    <div class="flex items-center justify-between gap-2">
-                        <select id="timeA" class="input-field w-full rounded-md p-2"></select>
-                        <input type="number" id="golsA" min="0" value="0" class="input-field w-16 text-center rounded-md p-2">
-                        <button type="button" id="btn-vencedor-a" class="btn-primary p-3 rounded-md" title="Marcar como vencedor">
-                            <i class="fas fa-trophy"></i>
-                        </button>
-                    </div>
-                    <div class="text-center font-bold text-gray-400">VS</div>
-                    <div class="flex items-center justify-between gap-2">
-                        <select id="timeB" class="input-field w-full rounded-md p-2"></select>
-                        <input type="number" id="golsB" min="0" value="0" class="input-field w-16 text-center rounded-md p-2">
-                         <button type="button" id="btn-vencedor-b" class="btn-primary p-3 rounded-md" title="Marcar como vencedor">
-                            <i class="fas fa-trophy"></i>
-                        </button>
-                    </div>
-                    <button type="submit" class="w-full btn-primary text-white font-bold py-3 px-4 rounded-lg mt-4">Salvar Resultado</button>
-                </form>
-            </div>
-            <div class="card p-6 rounded-lg shadow-lg mt-6">
-                <h2 class="text-xl font-bold mb-4">Histórico Recente</h2>
-                <ul id="lista-historico" class="space-y-3 max-h-80 overflow-y-auto pr-2">
-                    <!-- Histórico será inserido aqui -->
-                </ul>
-            </div>
-        </div>
-        
-        <!-- Página do Placar -->
-        <div id="page-placar" class="page">
-            <h1 class="text-3xl font-bold text-white mb-6">Placar</h1>
-            <div class="card p-6 rounded-lg shadow-lg">
-                <div class="flex justify-around items-center text-center">
-                    <!-- Time da Casa -->
-                    <div class="flex-1">
-                        <input id="placar-time-a-nome" type="text" class="input-field w-full text-center text-lg font-bold mb-2" placeholder="Time A">
-                        <p id="placar-time-a-pontos" class="text-6xl font-bold">0</p>
-                        <div class="mt-4 flex justify-center gap-2">
-                            <button id="placar-time-a-menos" class="btn-danger w-12 h-12 rounded-full text-2xl">-</button>
-                            <button id="placar-time-a-mais" class="btn-primary w-12 h-12 rounded-full text-2xl">+</button>
-                        </div>
-                    </div>
-                    <div class="text-4xl font-bold text-gray-500 mx-4">VS</div>
-                    <!-- Time Visitante -->
-                    <div class="flex-1">
-                        <input id="placar-time-b-nome" type="text" class="input-field w-full text-center text-lg font-bold mb-2" placeholder="Time B">
-                        <p id="placar-time-b-pontos" class="text-6xl font-bold">0</p>
-                        <div class="mt-4 flex justify-center gap-2">
-                            <button id="placar-time-b-menos" class="btn-danger w-12 h-12 rounded-full text-2xl">-</button>
-                            <button id="placar-time-b-mais" class="btn-primary w-12 h-12 rounded-full text-2xl">+</button>
-                        </div>
-                    </div>
-                </div>
-                <button id="placar-reset" class="w-full btn-secondary text-white font-bold py-2 px-4 rounded-lg mt-8">Zerar Placar</button>
-            </div>
-        </div>
-
+      </div>
     </main>
 
     <!-- Navegação Inferior -->
     <nav class="bottom-nav flex justify-around">
-        <button data-page="partidas" class="nav-link flex-1 py-3 text-center">
-            <i class="fas fa-calendar-alt text-xl"></i>
-            <span class="block text-xs">Partidas</span>
-        </button>
-        <button data-page="classificacao" class="nav-link flex-1 py-3 text-center">
-            <i class="fas fa-trophy text-xl"></i>
-            <span class="block text-xs">Classificação</span>
-        </button>
-        <button data-page="times" class="nav-link flex-1 py-3 text-center">
-            <i class="fas fa-users text-xl"></i>
-            <span class="block text-xs">Times</span>
-        </button>
-        <button data-page="registrar-partida" class="nav-link flex-1 py-3 text-center">
-            <i class="fas fa-edit text-xl"></i>
-            <span class="block text-xs">Registrar</span>
-        </button>
-        <button data-page="placar" class="nav-link flex-1 py-3 text-center">
-            <i class="fas fa-clipboard-list text-xl"></i>
-            <span class="block text-xs">Placar</span>
-        </button>
+      <button data-page="partidas" class="nav-link flex-1 py-3 text-center">
+        <i class="fas fa-calendar-alt text-xl"></i>
+        <span class="block text-xs">Partidas</span>
+      </button>
+      <button
+        data-page="classificacao"
+        class="nav-link flex-1 py-3 text-center"
+      >
+        <i class="fas fa-trophy text-xl"></i>
+        <span class="block text-xs">Classificação</span>
+      </button>
+      <button data-page="times" class="nav-link flex-1 py-3 text-center">
+        <i class="fas fa-users text-xl"></i>
+        <span class="block text-xs">Times</span>
+      </button>
+      <button
+        data-page="registrar-partida"
+        class="nav-link flex-1 py-3 text-center"
+      >
+        <i class="fas fa-edit text-xl"></i>
+        <span class="block text-xs">Registrar</span>
+      </button>
+      <button data-page="placar" class="nav-link flex-1 py-3 text-center">
+        <i class="fas fa-clipboard-list text-xl"></i>
+        <span class="block text-xs">Placar</span>
+      </button>
     </nav>
 
     <!-- Modal para mensagens -->
-    <div id="modal-info" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
-        <div class="card p-6 rounded-lg shadow-2xl w-full max-w-sm text-center">
-            <p id="modal-info-mensagem" class="text-lg mb-4"></p>
-            <button id="modal-info-fechar" class="btn-primary text-white font-bold py-2 px-6 rounded-md">OK</button>
-        </div>
+    <div
+      id="modal-info"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4"
+    >
+      <div class="card p-6 rounded-lg shadow-2xl w-full max-w-sm text-center">
+        <p id="modal-info-mensagem" class="text-lg mb-4"></p>
+        <button
+          id="modal-info-fechar"
+          class="btn-primary text-white font-bold py-2 px-6 rounded-md"
+        >
+          OK
+        </button>
+      </div>
     </div>
 
     <!-- Modal para confirmação -->
-    <div id="modal-confirm" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
-        <div class="card p-6 rounded-lg shadow-2xl w-full max-w-sm text-center">
-            <p id="modal-confirm-mensagem" class="text-lg mb-6"></p>
-            <div class="flex justify-center gap-4">
-                <button id="modal-confirm-cancelar" class="btn-secondary text-white font-bold py-2 px-6 rounded-md">Cancelar</button>
-                <button id="modal-confirm-action" class="btn-danger text-white font-bold py-2 px-6 rounded-md">Confirmar</button>
-            </div>
+    <div
+      id="modal-confirm"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4"
+    >
+      <div class="card p-6 rounded-lg shadow-2xl w-full max-w-sm text-center">
+        <p id="modal-confirm-mensagem" class="text-lg mb-6"></p>
+        <div class="flex justify-center gap-4">
+          <button
+            id="modal-confirm-cancelar"
+            class="btn-secondary text-white font-bold py-2 px-6 rounded-md"
+          >
+            Cancelar
+          </button>
+          <button
+            id="modal-confirm-action"
+            class="btn-danger text-white font-bold py-2 px-6 rounded-md"
+          >
+            Confirmar
+          </button>
         </div>
+      </div>
     </div>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    <script>
+      // --- Lógica Offline ---
 
-        // --- Configuração ---
-        const SUPABASE_URL = 'https://ddqcdmeagmbchbbrques.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkcWNkbWVhZ21iY2hiYnJxdWVzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjU5NDExMCwiZXhwIjoyMDY4MTcwMTEwfQ.30ntE6RUWAqxYy3kd4H2bAB2K4IMHrpf92UEVpk2t3w';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+      // --- Funções de Banco de Dados Local ---
+      const DB = {
+        getTimes: () =>
+          JSON.parse(localStorage.getItem("campeonato_times")) || [],
+        saveTimes: (times) =>
+          localStorage.setItem("campeonato_times", JSON.stringify(times)),
+        getPartidas: () =>
+          JSON.parse(localStorage.getItem("campeonato_partidas")) || [],
+        savePartidas: (partidas) =>
+          localStorage.setItem("campeonato_partidas", JSON.stringify(partidas)),
+        getRodadas: () =>
+          JSON.parse(localStorage.getItem("campeonato_rodadas")) || [],
+        saveRodadas: (rodadas) =>
+          localStorage.setItem("campeonato_rodadas", JSON.stringify(rodadas)),
+      };
 
-        // --- Navegação ---
-        const navButtons = document.querySelectorAll('.nav-link');
-        const pages = document.querySelectorAll('.page');
-        
-        function navigateTo(pageId) {
-            pages.forEach(p => p.classList.remove('active'));
-            navButtons.forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(`page-${pageId}`).classList.add('active');
-            document.querySelector(`.nav-link[data-page="${pageId}"]`).classList.add('active');
+      // --- Navegação ---
+      const navButtons = document.querySelectorAll(".nav-link");
+      const pages = document.querySelectorAll(".page");
+
+      function navigateTo(pageId) {
+        pages.forEach((p) => p.classList.remove("active"));
+        navButtons.forEach((b) => b.classList.remove("active"));
+
+        document.getElementById(`page-${pageId}`).classList.add("active");
+        document
+          .querySelector(`.nav-link[data-page="${pageId}"]`)
+          .classList.add("active");
+      }
+
+      navButtons.forEach((button) => {
+        button.addEventListener("click", () => navigateTo(button.dataset.page));
+      });
+
+      // --- Modais ---
+      const modalInfo = document.getElementById("modal-info");
+      const modalInfoMensagem = document.getElementById("modal-info-mensagem");
+      const modalInfoFechar = document.getElementById("modal-info-fechar");
+      function mostrarModalInfo(mensagem) {
+        modalInfoMensagem.textContent = mensagem;
+        modalInfo.classList.remove("hidden");
+      }
+      modalInfoFechar.addEventListener("click", () =>
+        modalInfo.classList.add("hidden")
+      );
+
+      const modalConfirm = document.getElementById("modal-confirm");
+      const modalConfirmMensagem = document.getElementById(
+        "modal-confirm-mensagem"
+      );
+      const modalConfirmCancelar = document.getElementById(
+        "modal-confirm-cancelar"
+      );
+      const modalConfirmAction = document.getElementById(
+        "modal-confirm-action"
+      );
+      modalConfirmCancelar.addEventListener("click", () =>
+        modalConfirm.classList.add("hidden")
+      );
+
+      // --- Renderização ---
+      function renderizarTimes(times) {
+        const listaTimesUl = document.getElementById("lista-times");
+        const timeASelect = document.getElementById("timeA");
+        const timeBSelect = document.getElementById("timeB");
+
+        if (!times || times.length === 0) {
+          listaTimesUl.innerHTML =
+            '<li class="text-gray-400">Nenhum time cadastrado.</li>';
+          timeASelect.innerHTML = "<option>Nenhum time</option>";
+          timeBSelect.innerHTML = "<option>Nenhum time</option>";
+          return;
         }
 
-        navButtons.forEach(button => {
-            button.addEventListener('click', () => navigateTo(button.dataset.page));
-        });
-
-        // --- Modais ---
-        const modalInfo = document.getElementById('modal-info');
-        const modalInfoMensagem = document.getElementById('modal-info-mensagem');
-        const modalInfoFechar = document.getElementById('modal-info-fechar');
-        function mostrarModalInfo(mensagem) {
-            modalInfoMensagem.textContent = mensagem;
-            modalInfo.classList.remove('hidden');
-        }
-        modalInfoFechar.addEventListener('click', () => modalInfo.classList.add('hidden'));
-
-        const modalConfirm = document.getElementById('modal-confirm');
-        const modalConfirmMensagem = document.getElementById('modal-confirm-mensagem');
-        const modalConfirmCancelar = document.getElementById('modal-confirm-cancelar');
-        const modalConfirmAction = document.getElementById('modal-confirm-action');
-        modalConfirmCancelar.addEventListener('click', () => modalConfirm.classList.add('hidden'));
-        
-        // --- Renderização ---
-        function renderizarTimes(times) {
-            const listaTimesUl = document.getElementById('lista-times');
-            const timeASelect = document.getElementById('timeA');
-            const timeBSelect = document.getElementById('timeB');
-
-            if (!times || times.length === 0) {
-                listaTimesUl.innerHTML = '<li class="text-gray-400">Nenhum time cadastrado.</li>';
-                timeASelect.innerHTML = '<option>Nenhum time</option>';
-                timeBSelect.innerHTML = '<option>Nenhum time</option>';
-                return;
-            }
-
-            listaTimesUl.innerHTML = times.map(time => `
+        listaTimesUl.innerHTML = times
+          .map(
+            (time) => `
                 <li class="flex justify-between items-center text-gray-200 p-2 rounded-md hover:bg-gray-700">
                     <span>${time.nome}</span>
                     <button class="delete-time-btn text-red-500 hover:text-red-400" data-id="${time.id}" data-nome="${time.nome}" title="Deletar time">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </li>
-            `).join('');
+            `
+          )
+          .join("");
 
-            const options = times.map(time => `<option value="${time.id}">${time.nome}</option>`).join('');
-            timeASelect.innerHTML = options;
-            timeBSelect.innerHTML = options;
+        const options = times
+          .map((time) => `<option value="${time.id}">${time.nome}</option>`)
+          .join("");
+        timeASelect.innerHTML = options;
+        timeBSelect.innerHTML = options;
+      }
+
+      function renderizarClassificacao(times) {
+        const tabelaClassificacaoTbody = document.getElementById(
+          "tabela-classificacao"
+        );
+        if (!times || times.length === 0) {
+          tabelaClassificacaoTbody.innerHTML =
+            '<tr><td colspan="8" class="text-center py-4 text-gray-400">Nenhum time.</td></tr>';
+          return;
         }
-
-        function renderizarClassificacao(times) {
-            const tabelaClassificacaoTbody = document.getElementById('tabela-classificacao');
-             if (!times || times.length === 0) {
-                tabelaClassificacaoTbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-400">Nenhum time.</td></tr>';
-                return;
-            }
-            times.sort((a, b) => b.pontos - a.pontos || b.vitorias - a.vitorias || b.saldoGols - a.saldoGols);
-            tabelaClassificacaoTbody.innerHTML = times.map((time, index) => `
+        times.sort(
+          (a, b) =>
+            b.pontos - a.pontos ||
+            b.vitorias - a.vitorias ||
+            b.saldoGols - a.saldoGols
+        );
+        tabelaClassificacaoTbody.innerHTML = times
+          .map(
+            (time, index) => `
                 <tr class="border-b border-gray-800">
                     <td class="px-2 py-3 font-medium">${index + 1}</td>
                     <td class="px-4 py-3 font-bold">${time.nome}</td>
-                    <td class="px-1 py-3 text-center">${time.pontos}</td><td class="px-1 py-3 text-center">${time.jogos}</td>
-                    <td class="px-1 py-3 text-center">${time.vitorias}</td><td class="px-1 py-3 text-center">${time.empates}</td>
-                    <td class="px-1 py-3 text-center">${time.derrotas}</td><td class="px-1 py-3 text-center">${time.saldoGols}</td>
+                    <td class="px-1 py-3 text-center">${
+                      time.pontos
+                    }</td><td class="px-1 py-3 text-center">${time.jogos}</td>
+                    <td class="px-1 py-3 text-center">${
+                      time.vitorias
+                    }</td><td class="px-1 py-3 text-center">${time.empates}</td>
+                    <td class="px-1 py-3 text-center">${
+                      time.derrotas
+                    }</td><td class="px-1 py-3 text-center">${
+              time.saldoGols
+            }</td>
                 </tr>
-            `).join('');
-        }
+            `
+          )
+          .join("");
+      }
 
-        function renderizarRodadas(rodadas) {
-            const container = document.getElementById('container-rodadas');
-            if (!rodadas || rodadas.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-center">Nenhuma rodada gerada.</p>';
-                return;
-            }
-            container.innerHTML = rodadas.sort((a,b) => a.rodada_numero - b.rodada_numero).map(rodada => `
+      function renderizarRodadas(rodadas) {
+        const container = document.getElementById("container-rodadas");
+        if (!rodadas || rodadas.length === 0) {
+          container.innerHTML =
+            '<p class="text-gray-400 text-center">Nenhuma rodada gerada.</p>';
+          return;
+        }
+        container.innerHTML = rodadas
+          .sort((a, b) => a.rodada_numero - b.rodada_numero)
+          .map(
+            (rodada) => `
                 <div class="card p-4 rounded-lg">
-                    <h3 class="text-lg font-bold text-blue-400 mb-3">Rodada ${rodada.rodada_numero}</h3>
+                    <h3 class="text-lg font-bold text-blue-400 mb-3">Rodada ${
+                      rodada.rodada_numero
+                    }</h3>
                     <ul class="space-y-2">
-                        ${rodada.partidas.map(partida => `
+                        ${rodada.partidas
+                          .map(
+                            (partida) => `
                             <li class="flex justify-between items-center text-sm text-gray-300">
                                 <span>${partida.timeA_nome}</span>
                                 <span class="text-xs text-gray-500">VS</span>
                                 <span>${partida.timeB_nome}</span>
                             </li>
-                        `).join('')}
+                        `
+                          )
+                          .join("")}
                     </ul>
                 </div>
-            `).join('');
-        }
-        
-        function renderizarHistorico(partidas) {
-            const listaHistoricoUl = document.getElementById('lista-historico');
-            if (!partidas || partidas.length === 0) {
-                listaHistoricoUl.innerHTML = '<li class="text-gray-400 text-center">Nenhuma partida registrada.</li>';
-                return;
-            }
+            `
+          )
+          .join("");
+      }
 
-            listaHistoricoUl.innerHTML = partidas.map(partida => {
-                const vencedorClass = partida.vencedor_nome === 'Empate' ? 'text-yellow-400' : 'text-green-400';
-                return `
+      function renderizarHistorico(partidas) {
+        const listaHistoricoUl = document.getElementById("lista-historico");
+        if (!partidas || partidas.length === 0) {
+          listaHistoricoUl.innerHTML =
+            '<li class="text-gray-400 text-center">Nenhuma partida registrada.</li>';
+          return;
+        }
+
+        const sortedPartidas = partidas.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+
+        listaHistoricoUl.innerHTML = sortedPartidas
+          .map((partida) => {
+            const vencedorClass =
+              partida.vencedor_nome === "Empate"
+                ? "text-yellow-400"
+                : "text-green-400";
+            return `
                     <li class="p-3 rounded-md border border-gray-700 group">
                         <div class="flex justify-between items-center text-gray-200">
                             <span>${partida.time_a_nome}</span>
@@ -312,230 +524,301 @@
                         </div>
                     </li>
                 `;
-            }).join('');
-        }
+          })
+          .join("");
+      }
 
-        // --- Lógica Principal ---
-        async function carregarDadosIniciais() {
-            const { data: times, error: timesError } = await supabase.from('times').select('*');
-            if (timesError) return handleMissingTableError(timesError, 'times');
-            renderizarTimes(times);
-            renderizarClassificacao(times);
+      // --- Lógica Principal ---
+      function renderApp() {
+        const times = DB.getTimes();
+        const partidas = DB.getPartidas();
+        const rodadas = DB.getRodadas();
 
-            const { data: rodadas, error: rodadasError } = await supabase.from('rodadas').select('*');
-            if (rodadasError) return handleMissingTableError(rodadasError, 'rodadas');
-            renderizarRodadas(rodadas);
-            
-            const { data: partidas, error: partidasError } = await supabase.from('partidas').select('*').order('created_at', { ascending: false }).limit(10);
-            if (partidasError) return handleMissingTableError(partidasError, 'partidas');
-            renderizarHistorico(partidas);
-        }
+        renderizarTimes(times);
+        renderizarClassificacao(times);
+        renderizarRodadas(rodadas);
+        renderizarHistorico(partidas);
+      }
 
-        function handleMissingTableError(error, tableName) {
-            console.error(`Erro ao acessar a tabela '${tableName}':`, error);
-            if (error.code === '42P01') {
-                mostrarModalInfo(`CONFIGURAÇÃO NECESSÁRIA: A tabela '${tableName}' não foi encontrada. Execute o script SQL no Supabase.`);
-            } else {
-                mostrarModalInfo(`Erro inesperado ao acessar a tabela '${tableName}'.`);
-            }
-        }
-
-        document.getElementById('form-cadastro-time').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const nomeTimeInput = document.getElementById('nome-time');
-            const nome = nomeTimeInput.value.trim();
-            if (nome) {
-                const { error } = await supabase.from('times').insert([{ nome }]);
-                if (error) handleMissingTableError(error, 'times');
-                else {
-                    nomeTimeInput.value = '';
-                    mostrarModalInfo(`Time "${nome}" cadastrado!`);
-                }
-            }
-        });
-
-        document.getElementById('btn-gerar-rodadas').addEventListener('click', async () => {
-             const { data: times, error: timesError } = await supabase.from('times').select('id, nome');
-             if (timesError || times.length < 2) {
-                 mostrarModalInfo("É preciso ter pelo menos 2 times para gerar as rodadas.");
-                 return;
-             }
-
-            let equipes = [...times];
-            if (equipes.length % 2 !== 0) {
-                equipes.push({ id: null, nome: "DESCANSO" });
-            }
-
-            const numRodadas = equipes.length - 1;
-            const metade = equipes.length / 2;
-            const rodadas = [];
-
-            for (let i = 0; i < numRodadas; i++) {
-                const rodada = { rodada_numero: i + 1, partidas: [] };
-                for (let j = 0; j < metade; j++) {
-                    const timeA = equipes[j];
-                    const timeB = equipes[equipes.length - 1 - j];
-                    if (timeA.id && timeB.id) {
-                         rodada.partidas.push({
-                            timeA_id: timeA.id, timeA_nome: timeA.nome,
-                            timeB_id: timeB.id, timeB_nome: timeB.nome
-                        });
-                    }
-                }
-                rodadas.push(rodada);
-                equipes.splice(1, 0, equipes.pop());
-            }
-
-            await supabase.from('rodadas').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-            const { error: insertError } = await supabase.from('rodadas').insert(rodadas);
-
-            if(insertError) handleMissingTableError(insertError, 'rodadas');
-            else mostrarModalInfo("Rodadas geradas com sucesso!");
-        });
-
-        document.getElementById('form-registrar-partida').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const idTimeA = document.getElementById('timeA').value;
-            const idTimeB = document.getElementById('timeB').value;
-            const golsA = parseInt(document.getElementById('golsA').value, 10);
-            const golsB = parseInt(document.getElementById('golsB').value, 10);
-
-            if (idTimeA === idTimeB) return mostrarModalInfo("Um time não pode jogar contra si mesmo.");
-            if (isNaN(golsA) || isNaN(golsB)) return mostrarModalInfo("Placar inválido.");
-
-            const { data: times, error: fetchError } = await supabase.from('times').select('*').in('id', [idTimeA, idTimeB]);
-            if (fetchError || times.length !== 2) return mostrarModalInfo("Erro ao buscar os times.");
-
-            const statsA = times.find(t => t.id === idTimeA);
-            const statsB = times.find(t => t.id === idTimeB);
-
-            statsA.jogos++; statsB.jogos++;
-            statsA.golsPro += golsA; statsA.golsContra += golsB;
-            statsB.golsPro += golsB; statsB.golsContra += golsA;
-            statsA.saldoGols = statsA.golsPro - statsA.golsContra;
-            statsB.saldoGols = statsB.golsPro - statsB.golsContra;
-
-            let vencedorNome;
-            if (golsA > golsB) {
-                statsA.vitorias++; statsA.pontos += 2;
-                statsB.derrotas++; statsB.pontos += 1;
-                vencedorNome = statsA.nome;
-            } else if (golsB > golsA) {
-                statsB.vitorias++; statsB.pontos += 2;
-                statsA.derrotas++; statsA.pontos += 1;
-                vencedorNome = statsB.nome;
-            } else {
-                statsA.empates++; statsB.empates++;
-                statsA.pontos += 1; statsB.pontos += 1;
-                vencedorNome = 'Empate';
-            }
-
-            await supabase.from('times').update(statsA).eq('id', idTimeA);
-            await supabase.from('times').update(statsB).eq('id', idTimeB);
-            await supabase.from('partidas').insert({ time_a_nome: statsA.nome, time_b_nome: statsB.nome, gols_a: golsA, gols_b: golsB, vencedor_nome: vencedorNome });
-            
-            mostrarModalInfo("Resultado salvo!");
-            document.getElementById('form-registrar-partida').reset();
-        });
-        
-        // --- Lógica dos botões de vencedor ---
-        document.getElementById('btn-vencedor-a').addEventListener('click', () => {
-            document.getElementById('golsA').value = 1;
-            document.getElementById('golsB').value = 0;
-        });
-        
-        document.getElementById('btn-vencedor-b').addEventListener('click', () => {
-            document.getElementById('golsA').value = 0;
-            document.getElementById('golsB').value = 1;
-        });
-
-        document.getElementById('btn-resetar-pontos').addEventListener('click', () => {
-            modalConfirmMensagem.textContent = 'Zerar os pontos e estatísticas de TODOS os times?';
-            modalConfirmAction.textContent = 'Sim, zerar';
-            modalConfirm.classList.remove('hidden');
-            modalConfirmAction.onclick = async () => {
-                await supabase.from('times').update({ pontos: 0, jogos: 0, vitorias: 0, empates: 0, derrotas: 0, golsPro: 0, golsContra: 0, saldoGols: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
-                await supabase.from('partidas').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-                await supabase.from('rodadas').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-                mostrarModalInfo('Campeonato reiniciado!');
-                modalConfirm.classList.add('hidden');
+      document
+        .getElementById("form-cadastro-time")
+        .addEventListener("submit", (e) => {
+          e.preventDefault();
+          const nomeTimeInput = document.getElementById("nome-time");
+          const nome = nomeTimeInput.value.trim();
+          if (nome) {
+            const times = DB.getTimes();
+            const novoTime = {
+              id: crypto.randomUUID(),
+              nome: nome,
+              pontos: 0,
+              jogos: 0,
+              vitorias: 0,
+              empates: 0,
+              derrotas: 0,
+              golsPro: 0,
+              golsContra: 0,
+              saldoGols: 0,
             };
+            times.push(novoTime);
+            DB.saveTimes(times);
+
+            nomeTimeInput.value = "";
+            mostrarModalInfo(`Time "${nome}" cadastrado!`);
+            renderApp();
+          }
         });
 
-        // --- Lógica de Deleção (Delegada) ---
-        document.addEventListener('click', async (e) => {
-            const deleteTimeBtn = e.target.closest('.delete-time-btn');
-            const deletePartidaBtn = e.target.closest('.delete-partida-btn');
+      document
+        .getElementById("btn-gerar-rodadas")
+        .addEventListener("click", () => {
+          const times = DB.getTimes();
+          if (times.length < 2) {
+            return mostrarModalInfo(
+              "É preciso ter pelo menos 2 times para gerar as rodadas."
+            );
+          }
 
-            if (deleteTimeBtn) {
-                const timeId = deleteTimeBtn.dataset.id;
-                const timeNome = deleteTimeBtn.dataset.nome;
-                modalConfirmMensagem.textContent = `Deletar o time "${timeNome}"?`;
-                modalConfirmAction.textContent = 'Sim, deletar';
-                modalConfirm.classList.remove('hidden');
-                modalConfirmAction.onclick = async () => {
-                    await supabase.from('times').delete().eq('id', timeId);
-                    modalConfirm.classList.add('hidden');
-                };
-            }
+          let equipes = [...times];
+          if (equipes.length % 2 !== 0) {
+            equipes.push({ id: null, nome: "DESCANSO" });
+          }
 
-            if (deletePartidaBtn) {
-                const partidaId = deletePartidaBtn.dataset.id;
-                modalConfirmMensagem.textContent = 'Deletar este registro da partida?';
-                modalConfirmAction.textContent = 'Sim, deletar';
-                modalConfirm.classList.remove('hidden');
-                modalConfirmAction.onclick = async () => {
-                    await supabase.from('partidas').delete().eq('id', partidaId);
-                    modalConfirm.classList.add('hidden');
-                };
+          const numRodadas = equipes.length - 1;
+          const metade = equipes.length / 2;
+          const rodadas = [];
+
+          for (let i = 0; i < numRodadas; i++) {
+            const rodada = { rodada_numero: i + 1, partidas: [] };
+            for (let j = 0; j < metade; j++) {
+              const timeA = equipes[j];
+              const timeB = equipes[equipes.length - 1 - j];
+              if (timeA.id && timeB.id) {
+                rodada.partidas.push({
+                  timeA_id: timeA.id,
+                  timeA_nome: timeA.nome,
+                  timeB_id: timeB.id,
+                  timeB_nome: timeB.nome,
+                });
+              }
             }
+            rodadas.push(rodada);
+            equipes.splice(1, 0, equipes.pop());
+          }
+
+          DB.saveRodadas(rodadas);
+          mostrarModalInfo("Rodadas geradas com sucesso!");
+          renderApp();
         });
 
-        // --- Lógica do Placar ---
-        const placarTimeAPontos = document.getElementById('placar-time-a-pontos');
-        const placarTimeBPontos = document.getElementById('placar-time-b-pontos');
-        let scoreA = 0;
-        let scoreB = 0;
+      document
+        .getElementById("form-registrar-partida")
+        .addEventListener("submit", (e) => {
+          e.preventDefault();
+          const idTimeA = document.getElementById("timeA").value;
+          const idTimeB = document.getElementById("timeB").value;
+          const golsA = parseInt(document.getElementById("golsA").value, 10);
+          const golsB = parseInt(document.getElementById("golsB").value, 10);
 
-        document.getElementById('placar-time-a-mais').addEventListener('click', () => {
-            scoreA++;
+          if (idTimeA === idTimeB)
+            return mostrarModalInfo("Um time não pode jogar contra si mesmo.");
+          if (isNaN(golsA) || isNaN(golsB))
+            return mostrarModalInfo("Placar inválido.");
+
+          const times = DB.getTimes();
+          const statsA = times.find((t) => t.id === idTimeA);
+          const statsB = times.find((t) => t.id === idTimeB);
+
+          if (!statsA || !statsB)
+            return mostrarModalInfo("Erro ao buscar os times.");
+
+          statsA.jogos++;
+          statsB.jogos++;
+          statsA.golsPro += golsA;
+          statsA.golsContra += golsB;
+          statsB.golsPro += golsB;
+          statsB.golsContra += golsA;
+          statsA.saldoGols = statsA.golsPro - statsA.golsContra;
+          statsB.saldoGols = statsB.golsPro - statsB.golsContra;
+
+          let vencedorNome;
+          if (golsA > golsB) {
+            statsA.vitorias++;
+            statsA.pontos += 2;
+            statsB.derrotas++;
+            statsB.pontos += 1;
+            vencedorNome = statsA.nome;
+          } else if (golsB > golsA) {
+            statsB.vitorias++;
+            statsB.pontos += 2;
+            statsA.derrotas++;
+            statsA.pontos += 1;
+            vencedorNome = statsB.nome;
+          } else {
+            statsA.empates++;
+            statsB.empates++;
+            statsA.pontos += 1;
+            statsB.pontos += 1;
+            vencedorNome = "Empate";
+          }
+
+          DB.saveTimes(times);
+
+          const partidas = DB.getPartidas();
+          partidas.push({
+            id: crypto.randomUUID(),
+            created_at: new Date().toISOString(),
+            time_a_nome: statsA.nome,
+            time_b_nome: statsB.nome,
+            gols_a: golsA,
+            gols_b: golsB,
+            vencedor_nome: vencedorNome,
+          });
+          DB.savePartidas(partidas);
+
+          mostrarModalInfo("Resultado salvo!");
+          document.getElementById("form-registrar-partida").reset();
+          renderApp();
+        });
+
+      document
+        .getElementById("btn-vencedor-a")
+        .addEventListener("click", () => {
+          document.getElementById("golsA").value = 1;
+          document.getElementById("golsB").value = 0;
+        });
+
+      document
+        .getElementById("btn-vencedor-b")
+        .addEventListener("click", () => {
+          document.getElementById("golsA").value = 0;
+          document.getElementById("golsB").value = 1;
+        });
+
+      document
+        .getElementById("btn-resetar-pontos")
+        .addEventListener("click", () => {
+          modalConfirmMensagem.textContent =
+            "Zerar os pontos e estatísticas de TODOS os times?";
+          modalConfirmAction.textContent = "Sim, zerar";
+          modalConfirm.classList.remove("hidden");
+          modalConfirmAction.onclick = () => {
+            let times = DB.getTimes();
+            times.forEach((time) => {
+              time.pontos = 0;
+              time.jogos = 0;
+              time.vitorias = 0;
+              time.empates = 0;
+              time.derrotas = 0;
+              time.golsPro = 0;
+              time.golsContra = 0;
+              time.saldoGols = 0;
+            });
+            DB.saveTimes(times);
+            DB.savePartidas([]);
+            DB.saveRodadas([]);
+            mostrarModalInfo("Campeonato reiniciado!");
+            modalConfirm.classList.add("hidden");
+            renderApp();
+          };
+        });
+
+      document.addEventListener("click", (e) => {
+        const deleteTimeBtn = e.target.closest(".delete-time-btn");
+        const deletePartidaBtn = e.target.closest(".delete-partida-btn");
+
+        if (deleteTimeBtn) {
+          const timeId = deleteTimeBtn.dataset.id;
+          const timeNome = deleteTimeBtn.dataset.nome;
+          modalConfirmMensagem.textContent = `Deletar o time "${timeNome}"?`;
+          modalConfirmAction.textContent = "Sim, deletar";
+          modalConfirm.classList.remove("hidden");
+          modalConfirmAction.onclick = () => {
+            let times = DB.getTimes();
+            DB.saveTimes(times.filter((t) => t.id !== timeId));
+            modalConfirm.classList.add("hidden");
+            renderApp();
+          };
+        }
+
+        if (deletePartidaBtn) {
+          const partidaId = deletePartidaBtn.dataset.id;
+          modalConfirmMensagem.textContent =
+            "Deletar este registro da partida?";
+          modalConfirmAction.textContent = "Sim, deletar";
+          modalConfirm.classList.remove("hidden");
+          modalConfirmAction.onclick = () => {
+            let partidas = DB.getPartidas();
+            DB.savePartidas(partidas.filter((p) => p.id !== partidaId));
+            modalConfirm.classList.add("hidden");
+            renderApp();
+          };
+        }
+      });
+
+      // --- Lógica do Placar ---
+      const placarTimeAPontos = document.getElementById("placar-time-a-pontos");
+      const placarTimeBPontos = document.getElementById("placar-time-b-pontos");
+      let scoreA = 0;
+      let scoreB = 0;
+
+      document
+        .getElementById("placar-time-a-mais")
+        .addEventListener("click", () => {
+          scoreA++;
+          placarTimeAPontos.textContent = scoreA;
+        });
+      document
+        .getElementById("placar-time-a-menos")
+        .addEventListener("click", () => {
+          if (scoreA > 0) {
+            scoreA--;
             placarTimeAPontos.textContent = scoreA;
+          }
         });
-        document.getElementById('placar-time-a-menos').addEventListener('click', () => {
-            if (scoreA > 0) {
-                scoreA--;
-                placarTimeAPontos.textContent = scoreA;
-            }
+      document
+        .getElementById("placar-time-b-mais")
+        .addEventListener("click", () => {
+          scoreB++;
+          placarTimeBPontos.textContent = scoreB;
         });
-        document.getElementById('placar-time-b-mais').addEventListener('click', () => {
-            scoreB++;
+      document
+        .getElementById("placar-time-b-menos")
+        .addEventListener("click", () => {
+          if (scoreB > 0) {
+            scoreB--;
             placarTimeBPontos.textContent = scoreB;
+          }
         });
-        document.getElementById('placar-time-b-menos').addEventListener('click', () => {
-            if (scoreB > 0) {
-                scoreB--;
-                placarTimeBPontos.textContent = scoreB;
-            }
+      document.getElementById("placar-reset").addEventListener("click", () => {
+        scoreA = 0;
+        scoreB = 0;
+        placarTimeAPontos.textContent = 0;
+        placarTimeBPontos.textContent = 0;
+        document.getElementById("placar-time-a-nome").value = "";
+        document.getElementById("placar-time-b-nome").value = "";
+      });
+
+      // --- Script de registro do Service Worker ---
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/service-worker.js")
+            .then((registration) => {
+              console.log(
+                "Service Worker registrado com sucesso:",
+                registration
+              );
+            })
+            .catch((error) => {
+              console.log("Falha ao registrar o Service Worker:", error);
+            });
         });
-        document.getElementById('placar-reset').addEventListener('click', () => {
-            scoreA = 0;
-            scoreB = 0;
-            placarTimeAPontos.textContent = 0;
-            placarTimeBPontos.textContent = 0;
-            document.getElementById('placar-time-a-nome').value = '';
-            document.getElementById('placar-time-b-nome').value = '';
-        });
+      }
 
-
-        // --- Realtime ---
-        supabase.channel('public-data')
-            .on('postgres_changes', { event: '*', schema: 'public' }, carregarDadosIniciais)
-            .subscribe();
-
-        // --- Iniciar ---
-        navigateTo('partidas');
-        carregarDadosIniciais();
-
+      // --- Iniciar ---
+      navigateTo("partidas");
+      renderApp();
     </script>
-</body>
+  </body>
 </html>
